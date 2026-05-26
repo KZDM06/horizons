@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Horizons â€” Planificateur de voyage IA</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f5;color:#1c1c1e;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+input,select,textarea{font-family:inherit}
+
+.site-header{background:#fff;border-bottom:1px solid #e8e8e8;height:56px;display:flex;align-items:center;padding:0 1.5rem;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:8px}
+.brand-dot{width:8px;height:8px;background:#1c1c1e;border-radius:50%}
+.brand-name{font-size:15px;font-weight:700;letter-spacing:-.3px}
+.brand-tag{font-size:12px;color:#888}
+
+.btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:7px;background:#1c1c1e;color:#fff;border-radius:10px;padding:9px 18px;font-size:14px;font-weight:500;transition:background .15s;border:none;cursor:pointer}
+.btn-primary:hover{background:#3a3a3c}
+.btn-primary.full{width:100%;padding:13px;font-size:15px;margin-top:12px}
+.btn-ghost{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;font-size:13px;color:#555;border-radius:8px;transition:background .15s;cursor:pointer;border:none;background:none}
+.btn-ghost:hover{background:#f5f5f5;color:#1c1c1e}
+
+.hero{padding:3rem 0 4rem}
+.container{max-width:720px;margin:0 auto;padding:0 1.5rem}
+.hero-title{font-size:clamp(28px,5vw,42px);font-weight:700;letter-spacing:-1px;line-height:1.15;margin-bottom:1rem}
+.hero-sub{font-size:16px;color:#555;margin-bottom:2rem;line-height:1.6}
+
+.search-card{background:#fff;border-radius:20px;border:1px solid #e8e8e8;padding:1.5rem;box-shadow:0 4px 16px rgba(0,0,0,.1);margin-bottom:2rem}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:1rem}
+.field label{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.field input,.field select{width:100%;padding:9px 11px;border:1px solid #e8e8e8;border-radius:8px;background:#f5f5f5;color:#1c1c1e;font-size:14px;transition:border-color .15s}
+.field input:focus,.field select:focus{outline:none;border-color:#1c1c1e;background:#fff}
+
+.divider{display:flex;align-items:center;gap:12px;font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin:1rem 0 .75rem}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:#e8e8e8}
+
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}
+.chip{font-size:12px;padding:5px 13px;border-radius:20px;border:1px solid #e8e8e8;background:#fff;color:#555;cursor:pointer;transition:all .15s;white-space:nowrap}
+.chip:hover{border-color:#1c1c1e;color:#1c1c1e}
+
+textarea{width:100%;padding:11px 13px;border:1px solid #e8e8e8;border-radius:8px;background:#f5f5f5;color:#1c1c1e;resize:none;line-height:1.6;font-size:14px;transition:border-color .15s}
+textarea:focus{outline:none;border-color:#1c1c1e;background:#fff}
+
+.api-warning{display:flex;align-items:center;gap:8px;background:#fff8e6;border:1px solid #f5c842;border-radius:8px;padding:10px 14px;font-size:13px;color:#7a5c00;margin-top:10px}
+.api-warning button{color:#1c6ef3;font-weight:500;text-decoration:underline;background:none;border:none;cursor:pointer}
+
+.how-it-works{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
+.hiw-item{display:flex;align-items:center;gap:7px;font-size:13px;color:#888}
+.hiw-item i{font-size:18px;color:#d0d0d0}
+.hiw-arrow{color:#d0d0d0;font-size:16px}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:300;padding:1rem}
+.modal{background:#fff;border-radius:16px;padding:1.5rem;width:100%;max-width:440px;box-shadow:0 4px 16px rgba(0,0,0,.1)}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.modal-head h2{font-size:17px;font-weight:700}
+.modal-desc{font-size:13px;color:#555;margin-bottom:1rem;line-height:1.6}
+.modal-footer{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:1.25rem}
+
+.loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.95);display:flex;align-items:center;justify-content:center;z-index:200}
+.loading-box{text-align:center}
+.spinner{width:36px;height:36px;border:2.5px solid #e8e8e8;border-top-color:#1c1c1e;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-msg{font-size:16px;font-weight:600;color:#1c1c1e;margin-top:1.25rem;margin-bottom:6px}
+.loading-sub{font-size:13px;color:#888}
+
+@media(max-width:640px){
+  .hero{padding:2rem 0 3rem}
+  .hero-sub{display:none}
+  .form-grid{grid-template-columns:1fr 1fr}
+  .how-it-works{display:none}
+  .brand-tag{display:none}
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="brand">
+    <div class="brand-dot"></div>
+    <span class="brand-name">Horizons</span>
+    <span class="brand-tag">planificateur de voyage IA</span>
+  </div>
+  <button class="btn-ghost" onclick="openApiModal()">
+    <i class="ti ti-key"></i> ClÃ© API
+  </button>
+</header>
+
+<main class="hero">
+  <div class="container">
+    <h1 class="hero-title">Votre prochain voyage,<br>imaginÃ© en quelques secondes.</h1>
+    <p class="hero-sub">DÃ©crivez ce que vous rÃªvez de vivre. L'IA gÃ©nÃ¨re un itinÃ©raire complet : vols, hÃ´tels, activitÃ©s, restaurants et budget.</p>
+
+    <div class="search-card">
+      <div class="form-grid">
+        <div class="field">
+          <label><i class="ti ti-map-pin"></i> Destination</label>
+          <input type="text" id="dest" placeholder="Tokyo, Bali, New Yorkâ€¦">
+        </div>
+        <div class="field">
+          <label><i class="ti ti-calendar"></i> DÃ©part</label>
+          <input type="date" id="dateFrom">
+        </div>
+        <div class="field">
+          <label><i class="ti ti-calendar-check"></i> Retour</label>
+          <input type="date" id="dateTo">
+        </div>
+        <div class="field">
+          <label><i class="ti ti-users"></i> Voyageurs</label>
+          <select id="pax">
+            <option>1 adulte</option>
+            <option>2 adultes</option>
+            <option>Famille (2+2)</option>
+            <option>Groupe (5+)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label><i class="ti ti-coin"></i> Budget</label>
+          <select id="bdgt">
+            <option>Petit (&lt;1 500â‚¬/pers)</option>
+            <option selected>Moyen (1 500â€“3 500â‚¬)</option>
+            <option>Confort (3 500â€“6 000â‚¬)</option>
+            <option>Luxe (6 000â‚¬+)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label><i class="ti ti-plane"></i> Classe vol</label>
+          <select id="cls">
+            <option>Ã‰conomique</option>
+            <option>Premium Ã©co</option>
+            <option>Business</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="divider"><span>ou dÃ©crivez librement votre voyage</span></div>
+
+      <div class="chips">
+        <button class="chip" onclick="setChip(this)">10 jours Ã  Bali, plage et temples</button>
+        <button class="chip" onclick="setChip(this)">Week-end romantique Ã  Paris</button>
+        <button class="chip" onclick="setChip(this)">Trek Japon solo, 2 semaines</button>
+        <button class="chip" onclick="setChip(this)">Safari Tanzanie en famille</button>
+        <button class="chip" onclick="setChip(this)">Road trip cÃ´te ouest USA</button>
+        <button class="chip" onclick="setChip(this)">City break Lisbonne, 4 jours</button>
+      </div>
+
+      <textarea id="freeText" rows="3" placeholder="Ex : voyage gastronomique au Japon pour 2 personnes en avril, on adore la randonnÃ©e et les petits hÃ´tels de charmeâ€¦"></textarea>
+
+      <div id="apiWarning" class="api-warning" style="display:none">
+        <i class="ti ti-alert-triangle"></i>
+        ClÃ© API Anthropic manquante. <button onclick="openApiModal()">Ajouter ma clÃ©</button>
+      </div>
+
+      <button class="btn-primary full" id="genBtn" onclick="startGenerate()">
+        <i class="ti ti-sparkles"></i> GÃ©nÃ©rer mon voyage
+      </button>
+    </div>
+
+    <div class="how-it-works">
+      <div class="hiw-item"><i class="ti ti-pencil"></i><span>DÃ©crivez votre voyage</span></div>
+      <div class="hiw-arrow"><i class="ti ti-arrow-right"></i></div>
+      <div class="hiw-item"><i class="ti ti-cpu"></i><span>L'IA planifie tout</span></div>
+      <div class="hiw-arrow"><i class="ti ti-arrow-right"></i></div>
+      <div class="hiw-item"><i class="ti ti-git-compare"></i><span>Comparez 2 options</span></div>
+    </div>
+  </div>
+</main>
+
+<!-- API Modal -->
+<div id="apiModal" class="modal-overlay" style="display:none" onclick="closeModalBg(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>ClÃ© API Anthropic</h2>
+      <button class="btn-ghost" style="padding:4px" onclick="closeApiModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <p class="modal-desc">Votre clÃ© est stockÃ©e uniquement dans votre navigateur. Elle n'est jamais partagÃ©e.</p>
+    <div class="field">
+      <label>ClÃ© API</label>
+      <input type="password" id="apiKeyInput" placeholder="sk-ant-â€¦">
+    </div>
+    <div class="modal-footer">
+      <a href="https://console.anthropic.com/keys" target="_blank" class="btn-ghost"><i class="ti ti-external-link"></i> Obtenir une clÃ©</a>
+      <button class="btn-primary" onclick="saveApiKey()"><i class="ti ti-check"></i> Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Loading -->
+<div id="loadingOverlay" class="loading-overlay" style="display:none">
+  <div class="loading-box">
+    <div class="spinner"></div>
+    <p class="loading-msg" id="loadingMsg">Analyse de votre demandeâ€¦</p>
+    <p class="loading-sub">GÃ©nÃ©ration en cours, quelques secondesâ€¦</p>
+  </div>
+</div>
+
+<script>
+const MSGS=['Analyse de votre demandeâ€¦','Recherche des destinationsâ€¦','SÃ©lection des volsâ€¦','Choix des hÃ´telsâ€¦','Curation des activitÃ©sâ€¦','Calcul du budgetâ€¦','Finalisation de l\'itinÃ©raireâ€¦'];
+let timer=null;
+
+window.addEventListener('DOMContentLoaded',()=>{
+  if(!localStorage.getItem('horizons_api_key')) document.getElementById('apiWarning').style.display='flex';
+  const p=JSON.parse(sessionStorage.getItem('horizons_params')||'{}');
+  if(p.dest) document.getElementById('dest').value=p.dest;
+  if(p.dateFrom) document.getElementById('dateFrom').value=p.dateFrom;
+  if(p.dateTo) document.getElementById('dateTo').value=p.dateTo;
+  if(p.pax) document.getElementById('pax').value=p.pax;
+  if(p.bdgt) document.getElementById('bdgt').value=p.bdgt;
+  if(p.cls) document.getElementById('cls').value=p.cls;
+  if(p.freeText) document.getElementById('freeText').value=p.freeText;
+  const today=new Date();
+  const from=new Date(today); from.setDate(from.getDate()+14);
+  const to=new Date(from); to.setDate(to.getDate()+7);
+  if(!document.getElementById('dateFrom').value) document.getElementById('dateFrom').value=from.toISOString().split('T')[0];
+  if(!document.getElementById('dateTo').value) document.getElementById('dateTo').value=to.toISOString().split('T')[0];
+  document.getElementById('freeText').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.metaKey||e.ctrlKey))startGenerate();});
+});
+
+function setChip(el){document.getElementById('freeText').value=el.textContent.trim();}
+
+function openApiModal(){
+  document.getElementById('apiModal').style.display='flex';
+  document.getElementById('apiKeyInput').value=localStorage.getItem('horizons_api_key')||'';
+  setTimeout(()=>document.getElementById('apiKeyInput').focus(),100);
+}
+function closeApiModal(){document.getElementById('apiModal').style.display='none';}
+function closeModalBg(e){if(e.target===document.getElementById('apiModal'))closeApiModal();}
+function saveApiKey(){
+  const k=document.getElementById('apiKeyInput').value.trim();
+  if(!k)return;
+  localStorage.setItem('horizons_api_key',k);
+  closeApiModal();
+  document.getElementById('apiWarning').style.display='none';
+  showToast('ClÃ© API enregistrÃ©e âœ“');
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeApiModal();});
+
+function showToast(msg){
+  const t=document.createElement('div');
+  t.textContent=msg;
+  Object.assign(t.style,{position:'fixed',bottom:'1.5rem',right:'1.5rem',background:'#1c1c1e',color:'#fff',padding:'10px 18px',borderRadius:'30px',fontSize:'13px',zIndex:'999',opacity:'0',transition:'opacity .2s'});
+  document.body.appendChild(t);
+  requestAnimationFrame(()=>{t.style.opacity='1';});
+  setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),300);},2500);
+}
+
+async function startGenerate(){
+  const apiKey=localStorage.getItem('horizons_api_key');
+  if(!apiKey){openApiModal();return;}
+  const from=document.getElementById('dateFrom').value;
+  const to=document.getElementById('dateTo').value;
+  let days=6;
+  if(from&&to){const d=(new Date(to)-new Date(from))/(864e5);if(d>0)days=Math.round(d);}
+  const params={
+    dest:document.getElementById('dest').value.trim(),
+    dateFrom:from,dateTo:to,
+    pax:document.getElementById('pax').value,
+    bdgt:document.getElementById('bdgt').value,
+    cls:document.getElementById('cls').value,
+    freeText:document.getElementById('freeText').value.trim(),
+    days
+  };
+  sessionStorage.setItem('horizons_params',JSON.stringify(params));
+
+  document.getElementById('loadingOverlay').style.display='flex';
+  document.getElementById('genBtn').disabled=true;
+  let i=0;
+  const el=document.getElementById('loadingMsg');
+  el.textContent=MSGS[0];
+  timer=setInterval(()=>{i=(i+1)%MSGS.length;el.textContent=MSGS[i];},1800);
+
+  try{
+    const seed=Math.random().toString(36).slice(2,10);
+    const userMsg=`[Session:${seed}] Destination: ${params.dest||'surprise'} | Dates: ${params.dateFrom}â†’${params.dateTo} | Voyageurs: ${params.pax} | Budget: ${params.bdgt} | Classe: ${params.cls} | Description: "${params.freeText||'voyage mÃ©morable'}" | ItinÃ©raire: ${params.days} jours. Minimum: 2 vols, 2 hÃ´tels, 6 activitÃ©s, 3 restaurants.`;
+    const trip=await callAPI(apiKey,userMsg);
+    sessionStorage.setItem('horizons_tripA',JSON.stringify(trip));
+    sessionStorage.removeItem('horizons_tripB');
+    window.location.href='results.html';
+  }catch(err){
+    clearInterval(timer);
+    document.getElementById('loadingOverlay').style.display='none';
+    document.getElementById('genBtn').disabled=false;
+    showToast('Erreur : '+(err.message||'RÃ©essayez'));
+    console.error(err);
+  }
+}
+
+async function callAPI(apiKey,userMsg){
+  const SYS=`Tu es un expert planificateur de voyages crÃ©atif. GÃ©nÃ¨re un voyage UNIQUE Ã  chaque appel.
+RÃ©ponds UNIQUEMENT en JSON valide. Aucun texte avant/aprÃ¨s. Aucun backtick.
+Format: {"destination":"Ville, Pays","country_code":"JP","lat":35.68,"lng":139.69,"title":"Titre poÃ©tique","duration":"8 jours","season":"Avril","vibe":"Culture & Gastronomie","unsplash_query":"tokyo japan","flights":[{"type":"Aller","airline":"Swiss","route":"GVAâ†’NRT","dep":"10:35","arr":"06:20+1","duration":"12h45","stops":"Direct","price_pp":680,"tip":"conseil"}],"hotels":[{"name":"Nom","stars":4,"area":"Quartier","style":"Boutique","price_night":145,"perks":["wifi","vue"],"tip":"conseil"}],"activities":[{"name":"Nom","category":"Culture","duration":"3h","price_pp":0,"when":"Matin","desc":"description","must":true}],"restaurants":[{"name":"Nom","cuisine":"Type","price":"â‚¬â‚¬","specialty":"plat","area":"Quartier","tip":"conseil"}],"budget":{"flights":1360,"hotels":1160,"activities":280,"food":400,"transport":120,"misc":180,"currency":"EUR","note":"note"},"itinerary":[{"day":1,"label":"ArrivÃ©e","items":[{"time":"15:00","act":"Transfert hÃ´tel"}]}],"tips":{"visa":"info","weather":"mÃ©tÃ©o","currency":"monnaie","timezone":"UTC+X","language":"langue","emergency":"112"}}`;
+  const r=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4000,system:SYS,messages:[{role:'user',content:userMsg}]})
+  });
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e?.error?.message||`HTTP ${r.status}`);}
+  const d=await r.json();
+  const raw=d.content?.filter(b=>b.type==='text').map(b=>b.text).join('')||'';
+  return JSON.parse(raw.replace(/```json|```/g,'').trim());
+}
+</script>
+</body>
+</html>
